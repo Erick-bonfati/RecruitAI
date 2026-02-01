@@ -1,20 +1,22 @@
 <template>
   <div class="page">
-    <header class="shell header">
-      <strong>RecruitAI</strong>
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/vagas">Vagas</RouterLink>
-        <RouterLink to="/candidatos">Candidatos</RouterLink>
-      </nav>
-    </header>
+    <div class="ambient">
+      <span class="orb orb--one"></span>
+      <span class="orb orb--two"></span>
+      <span class="orb orb--three"></span>
+    </div>
 
-    <main class="shell hero">
+    <HeaderBar />
+
+    <main class="shell main">
       <RouterView />
     </main>
 
-    <footer class="shell footer">
-      <small>RecruitAI · IA local para recrutamento justo e rápido.</small>
-    </footer>
+    <FooterBar />
   </div>
 </template>
+
+<script setup>
+import HeaderBar from './components/HeaderBar.vue'
+import FooterBar from './components/FooterBar.vue'
+</script>
