@@ -48,7 +48,22 @@
             {{ item }}
           </span>
         </div>
-        <button class="btn" type="button" @click="openApply(job)">Candidatar-se</button>
+        <div class="resume-row">
+          <input
+            class="resume-input"
+            type="file"
+            accept=".pdf,.doc,.docx"
+            @change="onResumeChange"
+          />
+          <button
+            class="btn"
+            type="button"
+            :disabled="!resumeFile"
+            @click="openApply(job)"
+          >
+            Candidatar-se
+          </button>
+        </div>
       </article>
     </div>
   </section>
@@ -56,10 +71,14 @@
   <section v-if="selectedJob" class="card section">
     <p class="eyebrow">Candidatura</p>
     <h2>Chatbot para {{ selectedJob.title }}</h2>
-    <p>
-      Aqui vamos abrir o formulário/chatbot para entender suas qualificações.
-      Esta etapa ainda não foi implementada.
-    </p>
+    
+    <p v-if="isUploading">Enviando currículo...</p>
+    <p v-if="uploadError" class="error">{{ uploadError }}</p>
+
+    <pre v-if="resumeJson" class="json-view">
+    {{ JSON.stringify(resumeJson, null, 2) }}
+    </pre>
+
     <button class="btn btn--ghost" type="button" @click="selectedJob = null">
       Fechar
     </button>
@@ -71,6 +90,44 @@ import { computed, ref } from 'vue'
 
 const areaFilter = ref('todas')
 const selectedJob = ref(null)
+const resumeFile = ref(null)
+
+const isUploading = ref(false)
+const resumeJson = ref(null)
+const uploadError = ref(null)
+
+const enviaCurriculoOllama = async(file) => {
+  if(!file) return;
+
+  isUploading.value = true
+  uploadError.value = ''
+  resumeJson.value = null
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch('http://127.0.0.1:8000/extrair', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if(!response.ok) {
+      const err = await response.json()
+      throw new Error(err.detail || 'Erro ao enviar currículo')
+    }
+
+    resumeJson.value = await response.json()
+
+  } catch(err)
+  {
+    uploadError.value = err.message || 'Falha no upload'
+  } finally {
+    isUploading.value = false
+  }
+ 
+
+}
 
 const jobs = ref([
   {
@@ -109,5 +166,11 @@ const filteredJobs = computed(() => {
 
 const openApply = (job) => {
   selectedJob.value = job
+}
+
+const onResumeChange = async (event) => {
+  const file = event.target.files?.[0] || null
+  resumeFile.value = file
+  await enviaCurriculoOllama(file)
 }
 </script>

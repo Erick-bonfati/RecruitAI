@@ -1,0 +1,6 @@
+fastapi # API PYTHON FRAMEWORK
+uvicorn
+pypdf # read PDF files
+httpx # for request llama3 locally
+pydantic
+python-multipart # for file uploads
