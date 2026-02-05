@@ -6,6 +6,8 @@ import httpx
 import json
 from pypdf import PdfReader
 from io import BytesIO
+from pathlib import Path
+from threading import Lock
 
 app = FastAPI()
 
@@ -40,6 +42,40 @@ class Curriculo(BaseModel):
     certificacoes: List[str] = []
     idiomas: List[str] = []
 
+# Modelo de vaga
+class Job(BaseModel):
+    title: str
+    description: str
+    location: Optional[str] = "Remoto · Brasil"
+    level: Optional[str] = "Pleno"
+    area: Optional[str] = "tech"
+    must: List[str] = []
+    nice: List[str] = []
+    tasks: List[str] = []
+    yearsExp: Optional[int] = None
+    seniority: Optional[str] = ""
+
+# Persistência simples em arquivo JSON
+DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR.mkdir(exist_ok=True)
+JOBS_FILE = DATA_DIR / "jobs.json"
+_jobs_lock = Lock()
+
+def load_jobs() -> List[Job]:
+    if not JOBS_FILE.exists():
+        return []
+    try:
+        data = json.loads(JOBS_FILE.read_text(encoding="utf-8"))
+        return [Job(**item) for item in data]
+    except Exception as exc:
+        print("Erro ao ler jobs.json:", exc)
+        return []
+
+def save_jobs(jobs: List[Job]) -> None:
+    with _jobs_lock:
+        JOBS_FILE.write_text(json.dumps([job.dict() for job in jobs], ensure_ascii=False, indent=2), encoding="utf-8")
+        
+
 # Extrair o texto do PDF
 
 def extrair_texto_pdf(file_bytes: bytes) -> str:
@@ -72,7 +108,7 @@ async def chamar_llama3(texto: str) -> dict:
         Texto do currículo:
         \"\"\"{texto}\"\"\"
     """
-    async with httpx.AsyncClient(timeout=180) as client:
+    async with httpx.AsyncClient(timeout=300) as client:
         response = await client.post(
             "http://localhost:11434/api/generate",
             json={
@@ -126,3 +162,14 @@ async def extrair_curriculo(file: UploadFile = File(...)):
     
     print("JSON gerado com sucesso")
     return parsed
+
+@app.get("/jobs", response_model=List[Job])
+async def listar_jobs():
+    return load_jobs()
+
+@app.post("/jobs", response_model=Job)
+async def criar_job(job: Job):
+    jobs = load_jobs()
+    jobs.append(job)
+    save_jobs(jobs)
+    return job

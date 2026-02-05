@@ -52,6 +52,14 @@
           Descrição da vaga
           <textarea v-model="description" rows="4" placeholder="Resumo das responsabilidades"></textarea>
         </label>
+        <label>
+          Local
+          <input v-model="location" placeholder="Ex: Remoto · Brasil" />
+        </label>
+        <label>
+          Senioridade/Nível
+          <input v-model="level" placeholder="Ex: Pleno" />
+        </label>
         <div class="field-group">
           <span class="field-label">Requisitos obrigatórios</span>
           <div class="skill-row">
@@ -87,9 +95,11 @@
           <input v-model="salary" placeholder="Ex: R$ 10.000 - 14.000" />
         </label>
         <div class="form-actions">
-          <button class="btn" type="button">Salvar vaga</button>
+          <button class="btn" type="button" @click="saveJob">Salvar vaga</button>
           <button class="btn btn--ghost" type="button">Publicar depois</button>
         </div>
+        <p v-if="info" class="helper">{{ info }}</p>
+        <p v-if="error" class="error">{{ error }}</p>
       </form>
     </div>
   </section>
@@ -121,6 +131,53 @@ const niceInput = ref('')
 const mustList = ref(['Vue.js', 'APIs REST'])
 const niceList = ref(['TypeScript'])
 const salary = ref('')
+const location = ref('')
+const level = ref('')
+const info = ref('')
+const error = ref('')
+
+const saveJob = async () => {
+  info.value = ''
+  error.value = ''
+
+  const job = {
+    title: title.value.trim(),
+    description: description.value.trim(),
+    location: location.value.trim() || 'Não especificado',
+    level: level.value.trim() || 'Não especificado',
+    area: 'tech',
+    must: [...mustList.value],
+    nice: [...niceList.value],
+    tasks: [],
+    yearsExp: null,
+    seniority: level.value.trim() || 'Não especificado',
+  }
+
+  if (!job.title || !job.description) {
+    error.value = 'Preencha pelo menos título e descrição.'
+    return
+  }
+
+  try {
+    const res = await fetch('http://127.0.0.1:8000/jobs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(job),
+    })
+    if (!res.ok) throw new Error('Erro ao salvar vaga')
+    info.value = 'Vaga salva em jobs.json.'
+
+    title.value = ''
+    description.value = ''
+    location.value = ''
+    level.value = ''
+    mustList.value = []
+    niceList.value = []
+    salary.value = ''
+  } catch (err) {
+    error.value = err.message || 'Falha ao salvar'
+  }
+}
 
 const drafts = ref([
   {

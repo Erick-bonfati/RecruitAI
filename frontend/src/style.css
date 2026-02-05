@@ -398,6 +398,15 @@ textarea:focus {
   color: var(--muted);
 }
 
+.error {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.info {
+  color: var(--text);
+}
+
 .form-actions {
   display: flex;
   gap: 12px;
@@ -568,6 +577,12 @@ textarea:focus {
   gap: 10px;
 }
 
+.card-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .candidate-card header {
   display: flex;
   align-items: start;
@@ -600,6 +615,43 @@ textarea:focus {
 .badge--destaque {
   background: var(--accent-soft);
   color: var(--text);
+}
+
+.upload-card {
+  border: 1px dashed rgba(11, 19, 32, 0.14);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: linear-gradient(135deg, #fffaf5 0%, #ffffff 65%);
+}
+
+.upload-field {
+  border: 1px solid rgba(11, 19, 32, 0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.upload-field input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-field:hover {
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .summary-list {

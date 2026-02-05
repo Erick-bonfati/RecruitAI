@@ -34,8 +34,8 @@
       <article v-for="job in filteredJobs" :key="job.title" class="candidate-card">
         <header>
           <div>
-            <strong>{{ job.title }}</strong>
-            <span>{{ job.location }}</span>
+            <strong>{{ job.title }} </strong>
+            <span> - {{ job.location }}</span>
           </div>
           <span class="badge badge--avaliado">{{ job.level }}</span>
         </header>
@@ -48,23 +48,77 @@
             {{ item }}
           </span>
         </div>
-        <div class="resume-row">
-          <input
-            class="resume-input"
-            type="file"
-            accept=".pdf,.doc,.docx"
-            @change="onResumeChange"
-          />
-          <button
-            class="btn"
-            type="button"
-            :disabled="!resumeFile"
-            @click="openApply(job)"
-          >
-            Candidatar-se
+        <div class="card-actions">
+          <button class="btn" type="button" @click="detailJob = job">
+            Ver vaga
           </button>
         </div>
       </article>
+    </div>
+  </section>
+
+  <section v-if="detailJob" class="card section">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">Detalhe da vaga</p>
+        <h2>{{ detailJob.title }}</h2>
+        <p>{{ detailJob.location }} · {{ detailJob.level }}</p>
+      </div>
+      <div class="detail-actions">
+        <button class="btn btn--ghost" type="button" @click="detailJob = null">
+          Fechar
+        </button>
+      </div>
+    </div>
+
+    <p>{{ detailJob.description }}</p>
+
+    <div class="chip-row">
+      <strong>Requisitos:</strong>
+      <span class="chip" v-for="(item, i) in detailJob.must" :key="`dm-${i}`">{{ item }}</span>
+    </div>
+
+    <div class="chip-row">
+      <strong>Diferenciais:</strong>
+      <span class="chip chip--ghost" v-for="(item, i) in detailJob.nice" :key="`dn-${i}`">{{ item }}</span>
+    </div>
+
+    <div v-if="detailJob.tasks?.length">
+      <strong>Tarefas:</strong>
+      <ul>
+        <li v-for="(t, i) in detailJob.tasks" :key="`dt-${i}`">{{ t }}</li>
+      </ul>
+    </div>
+
+    <div v-if="detailJob.yearsExp">
+      <strong>Experiência mínima:</strong> {{ detailJob.yearsExp }} anos
+    </div>
+
+    <div v-if="detailJob.seniority">
+      <strong>Senioridade desejada:</strong> {{ detailJob.seniority }}
+    </div>
+
+    <div class="upload-card">
+      <div>
+        <p class="eyebrow">Currículo</p>
+        <p class="helper">Envie o PDF e depois clique em Candidatar-se para calcular a aderência.</p>
+        <label class="upload-field">
+          <input
+            type="file"
+            accept="application/pdf"
+            @change="onResumeChange"
+          />
+          <span>{{ resumeFile ? resumeFile.name : 'Escolher arquivo PDF' }}</span>
+        </label>
+      </div>
+      <button
+        class="btn"
+        type="button"
+        :disabled="!resumeFile || isUploading"
+        @click="openApply(detailJob)"
+      >
+        {{ isUploading ? 'Enviando...' : 'Candidatar-se' }}
+      </button>
     </div>
   </section>
 
@@ -72,9 +126,16 @@
     <p class="eyebrow">Candidatura</p>
     <h2>Chatbot para {{ selectedJob.title }}</h2>
     
-    <p v-if="isUploading">Enviando currículo...</p>
+    <p v-if="isUploading" class="info">Estamos analisando seu currículo, aguarde...</p>
     <p v-if="uploadError" class="error">{{ uploadError }}</p>
 
+    <div v-if="matchResult" class="card mini-card">
+      <p class="eyebrow">Aderência</p>
+      <p><strong>{{ matchResult.pct }}%</strong> dos requisitos atendidos</p>
+      <p v-if="matchResult.hit.length"><strong>Batidos:</strong> {{ matchResult.hit.join(', ') }}</p>
+      <p v-if="matchResult.missing.length" class="error"><strong>Faltando:</strong> {{ matchResult.missing.join(', ') }}</p>
+    </div>
+    
     <pre v-if="resumeJson" class="json-view">
     {{ JSON.stringify(resumeJson, null, 2) }}
     </pre>
@@ -86,10 +147,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const areaFilter = ref('todas')
 const selectedJob = ref(null)
+const detailJob = ref(null)
 const resumeFile = ref(null)
 
 const isUploading = ref(false)
@@ -129,35 +191,17 @@ const enviaCurriculoOllama = async(file) => {
 
 }
 
-const jobs = ref([
-  {
-    title: 'Frontend Engineer',
-    location: 'Remoto · Brasil',
-    level: 'Pleno',
-    area: 'tech',
-    description: 'Construir experiências web acessíveis e performáticas com Vue.',
-    must: ['Vue.js', 'JavaScript', 'APIs REST'],
-    nice: ['TypeScript', 'Testes'],
-  },
-  {
-    title: 'Product Designer',
-    location: 'Híbrido · São Paulo',
-    level: 'Sênior',
-    area: 'design',
-    description: 'Desenhar fluxos de candidatura e dashboards de triagem.',
-    must: ['Pesquisa', 'Design System', 'Figma'],
-    nice: ['Prototipagem'],
-  },
-  {
-    title: 'Data Analyst',
-    location: 'Remoto · Brasil',
-    level: 'Júnior',
-    area: 'dados',
-    description: 'Analisar métricas de compatibilidade e qualidade da triagem.',
-    must: ['SQL', 'Dashboard', 'Estatística básica'],
-    nice: ['Python'],
-  },
-])
+const jobs = ref([])
+
+const carregarVagas = async () => {
+  try {
+    const res = await fetch('http://127.0.0.1:8000/jobs')
+    if (!res.ok) throw new Error('Erro ao carregar vagas')
+    jobs.value = await res.json()
+  } catch (err) {
+    console.error(err)
+  }
+}
 
 const filteredJobs = computed(() => {
   if (areaFilter.value === 'todas') return jobs.value
@@ -173,4 +217,24 @@ const onResumeChange = async (event) => {
   resumeFile.value = file
   await enviaCurriculoOllama(file)
 }
+
+const norm = (list = []) => list.filter(Boolean).map((s) => s.toLowerCase().trim())
+
+const matchResult = computed(() => {
+  if (!resumeJson.value || !selectedJob.value) return null
+
+  const skills = new Set(norm(resumeJson.value.skills))
+  const required = norm(selectedJob.value.must)
+
+  const hit = required.filter((req) => skills.has(req))
+  const missing = required.filter((req) => !skills.has(req))
+  const pct = required.length ? Math.round((hit.length / required.length) * 100) : 0
+
+  return { hit, missing, pct }
+})
+
+onMounted(() => {
+  carregarVagas()
+})
+
 </script>
