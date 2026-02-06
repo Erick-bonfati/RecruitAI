@@ -14,8 +14,5 @@
       <RouterLink to="/candidatos" class="nav-link">Cadastrar vagas</RouterLink>
     </nav>
 
-    <div class="header-actions">
-      <button class="btn" type="button">Criar vaga</button>
-    </div>
   </header>
 </template>

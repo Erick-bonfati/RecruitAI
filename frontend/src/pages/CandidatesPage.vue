@@ -9,23 +9,6 @@
           a faixa salarial ou pretensão.
         </p>
       </div>
-      <div class="card mini-card">
-        <p class="eyebrow">Resumo</p>
-        <div class="summary-list">
-          <div>
-            <strong>3</strong>
-            <span>vagas rascunho</span>
-          </div>
-          <div>
-            <strong>5</strong>
-            <span>em triagem</span>
-          </div>
-          <div>
-            <strong>2</strong>
-            <span>publicadas</span>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -104,21 +87,6 @@
     </div>
   </section>
 
-  <section class="card section">
-    <h2>Rascunhos recentes</h2>
-    <div class="candidate-grid">
-      <article class="candidate-card" v-for="draft in drafts" :key="draft.title">
-        <header>
-          <div>
-            <strong>{{ draft.title }}</strong>
-            <span>{{ draft.location }}</span>
-          </div>
-          <span class="badge badge--novo">Rascunho</span>
-        </header>
-        <p>{{ draft.summary }}</p>
-      </article>
-    </div>
-  </section>
 </template>
 
 <script setup>
@@ -128,8 +96,8 @@ const title = ref('')
 const description = ref('')
 const mustInput = ref('')
 const niceInput = ref('')
-const mustList = ref(['Vue.js', 'APIs REST'])
-const niceList = ref(['TypeScript'])
+const mustList = ref([])
+const niceList = ref([])
 const salary = ref('')
 const location = ref('')
 const level = ref('')

@@ -3,13 +3,13 @@
 Plataforma inteligente para triagem de currículos e correspondência de candidatos usando IA local.
 
 ## Visão Geral
-O SkillMatch AI automatiza a pré-seleção: empresas cadastram vagas com requisitos técnicos; candidatos conversam com um chatbot para enviar dados e currículo. Modelos de IA locais extraem competências, analisam experiência e calculam compatibilidade de forma explicável, priorizando privacidade e escalabilidade.
+O SkillMatch AI automatiza a pré-seleção: empresas cadastram vagas com requisitos técnicos; candidatos enviam dados e currículo por formulário lido por IA. Modelos de IA locais extraem competências, analisam experiência e calculam compatibilidade de forma explicável, priorizando privacidade e escalabilidade.
 
 ## Fluxo do Sistema
 1. **Cadastro da vaga (empresa)**  
    Requisitos obrigatórios e desejáveis, senioridade, stack, perguntas eliminatórias. Tudo é estruturado e salvo.
-2. **Candidatura via chatbot (candidato)**  
-   Coleta guiada de dados pessoais, formação, experiência, competências e upload do currículo (PDF/DOCX).
+2. **Candidatura via formulário lido por IA (candidato)**  
+   Coleta guiada de dados pessoais, formação, experiência, competências e upload do currículo (PDF/DOCX), com leitura automática pela IA.
 3. **Processamento do currículo**  
    Extração de texto → identificação e normalização de habilidades (ex.: JS → JavaScript) → análise semântica → dados estruturados usando modelos locais (Ollama).
 4. **Matching engine**  
@@ -19,7 +19,7 @@ O SkillMatch AI automatiza a pré-seleção: empresas cadastram vagas com requis
 
 ## Tecnologias
 
-- **Frontend:** Vue.js; Tailwind CSS; interface de chatbot customizada.
+- **Frontend:** Vue.js; Tailwind CSS; interface de candidatura customizada.
 - **Backend:** FastAPI (Python); API RESTful; validação com Pydantic.
 - **Processamento assíncrono:** Celery + Redis (broker/cache).
 - **Banco de dados:** PostgreSQL (vagas, candidatos, candidaturas, avaliações).

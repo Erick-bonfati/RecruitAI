@@ -6,7 +6,7 @@
         <h1>Vagas abertas para quem quer se candidatar.</h1>
         <p>
           Encontre as posições disponíveis, veja requisitos e descrição completa.
-          Quando estiver pronto, clique em candidatar-se para iniciar o chatbot.
+          Quando estiver pronto, clique em candidatar-se para iniciar a candidatura.
         </p>
       </div>
       <div class="card mini-card">
@@ -31,7 +31,7 @@
       </select>
     </div>
     <div class="candidate-grid">
-      <article v-for="job in filteredJobs" :key="job.title" class="candidate-card">
+      <article v-for="job in visibleJobs" :key="job.title" class="candidate-card">
         <header>
           <div>
             <strong>{{ job.title }} </strong>
@@ -39,7 +39,6 @@
           </div>
           <span class="badge badge--avaliado">{{ job.level }}</span>
         </header>
-        <p>{{ job.description }}</p>
         <div class="chip-row">
           <span class="chip" v-for="(item, index) in job.must" :key="`m-${index}`">
             {{ item }}
@@ -124,7 +123,7 @@
 
   <section v-if="selectedJob" class="card section">
     <p class="eyebrow">Candidatura</p>
-    <h2>Chatbot para {{ selectedJob.title }}</h2>
+    <h2>Candidatura para {{ selectedJob.title }}</h2>
     
     <p v-if="isUploading" class="info">Estamos analisando seu currículo, aguarde...</p>
     <p v-if="uploadError" class="error">{{ uploadError }}</p>
@@ -206,6 +205,11 @@ const carregarVagas = async () => {
 const filteredJobs = computed(() => {
   if (areaFilter.value === 'todas') return jobs.value
   return jobs.value.filter((job) => job.area === areaFilter.value)
+})
+
+const visibleJobs = computed(() => {
+  if (!detailJob.value) return filteredJobs.value
+  return [detailJob.value]
 })
 
 const openApply = (job) => {

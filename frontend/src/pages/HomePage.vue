@@ -23,8 +23,7 @@
         <li v-for="benefit in benefits" :key="benefit">{{ benefit }}</li>
       </ul>
       <div class="cta-row">
-        <button class="btn" type="button">Criar candidatura</button>
-        <button class="btn btn--ghost" type="button">Ver demonstração</button>
+        <RouterLink class="btn" to="/candidatos">Criar candidatura</RouterLink>
       </div>
     </div>
 
@@ -33,22 +32,22 @@
         <p class="eyebrow">Status hoje</p>
         <div class="stat-grid">
           <div class="stat">
-            <strong>18</strong>
+            <strong>{{ metricas.vagas_ativas }}</strong>
             <span>vagas ativas</span>
           </div>
           <div class="stat">
-            <strong>312</strong>
+            <strong>{{ metricas.candidaturas }}</strong>
             <span>candidaturas</span>
           </div>
           <div class="stat">
-            <strong>76%</strong>
+            <strong>{{ matchPercent }}%</strong>
             <span>match médio</span>
           </div>
         </div>
         <div class="progress">
           <span>Triagens concluídas</span>
           <div class="progress-bar">
-            <div class="progress-fill" style="width: 72%"></div>
+            <div class="progress-fill" :style="{ width: matchPercent + '%' }"></div>
           </div>
           <small>+12% nesta semana</small>
         </div>
@@ -58,9 +57,9 @@
         <p class="eyebrow">Fluxo em 4 passos</p>
         <ol>
           <li>Cadastre requisitos e pesos por vaga.</li>
-          <li>Converse com candidatos via chatbot.</li>
+          <li>Receba candidatos por formulário lido por IA.</li>
           <li>Extraia competências com IA local.</li>
-          <li>Entregue ranking e feedback humano.</li>
+          <li>Entregue ranking e feedback padrão.</li>
         </ol>
       </div>
     </div>
@@ -72,8 +71,8 @@
       <div>
         <h2>Veja todas as oportunidades disponíveis</h2>
         <p>
-          A página de vagas reúne todas as posições abertas. Você pode conversar com
-          o chatbot para definir suas qualificações, receber feedback e seguir com
+          A página de vagas reúne todas as posições abertas. Você pode informar suas
+          qualificações em um formulário lido por IA, receber feedback e seguir com
           a candidatura.
         </p>
       </div>
@@ -81,7 +80,7 @@
         <strong>Resumo rápido</strong>
         <ul>
           <li>Vagas abertas com requisitos e descrição clara.</li>
-          <li>Chatbot guiado para mapear competências.</li>
+          <li>Formulário guiado lido por IA para mapear competências.</li>
           <li>Compatibilidade exibida antes de enviar.</li>
         </ul>
       </div>
@@ -90,7 +89,28 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+
+const metricas = ref({vagas_ativas: 0, candidaturas: 0, match_medio: 0})
+const metricasLoading = ref(true)
+const metricasErro = ref("")
+
+const carregarMetricas = async () => {
+  metricasLoading.value = true
+  metricasErro.value = ""
+  try {
+    const res = await fetch("http://127.0.0.1:8000/metricas")
+    if(!res.ok) throw new Error("Erro ao carregar métricas")
+    metricas.value = await res.json()
+  } catch (err) {
+    metricasErro.value = err.message
+  } finally {
+    metricasLoading.value = false
+  }
+}
+
+onMounted(carregarMetricas)
+
 
 const persona = ref('empresa')
 

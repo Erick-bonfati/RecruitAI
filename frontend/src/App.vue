@@ -1,10 +1,5 @@
 <template>
   <div class="page">
-    <div class="ambient">
-      <span class="orb orb--one"></span>
-      <span class="orb orb--two"></span>
-      <span class="orb orb--three"></span>
-    </div>
 
     <HeaderBar />
 

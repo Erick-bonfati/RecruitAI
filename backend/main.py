@@ -20,6 +20,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Persistência simples em arquivo JSON
+METRICAS_PATH = Path(__file__).parent / "data" / "metricas.json"
+DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR.mkdir(exist_ok=True)
+JOBS_FILE = DATA_DIR / "jobs.json"
+
+_jobs_lock = Lock()
+
+
 class Experiencia(BaseModel):
     empresa: Optional[str] = ""
     cargo: Optional[str] = ""
@@ -55,11 +64,6 @@ class Job(BaseModel):
     yearsExp: Optional[int] = None
     seniority: Optional[str] = ""
 
-# Persistência simples em arquivo JSON
-DATA_DIR = Path(__file__).parent / "data"
-DATA_DIR.mkdir(exist_ok=True)
-JOBS_FILE = DATA_DIR / "jobs.json"
-_jobs_lock = Lock()
 
 def load_jobs() -> List[Job]:
     if not JOBS_FILE.exists():
@@ -82,7 +86,7 @@ def extrair_texto_pdf(file_bytes: bytes) -> str:
     leitor = PdfReader(BytesIO(file_bytes))
     texto_pagina = []
     for pagina in leitor.pages:
-        texto_pagina.append(pagina.extract_text())
+        texto_pagina.append(pagina.extract_text() or "")
     return "\n".join(texto_pagina).strip()
 
 # Chamar llama3 localmente
@@ -173,3 +177,18 @@ async def criar_job(job: Job):
     jobs.append(job)
     save_jobs(jobs)
     return job
+
+@app.get("/metricas")
+def obter_metricas():
+    if not METRICAS_PATH.exists():
+        raise HTTPException(status_code=500, detail="Métricas não encontradas.")
+    data = json.loads(METRICAS_PATH.read_text(encoding="utf-8"))
+    
+    if JOBS_FILE.exists():
+        try: 
+            jobs = json.loads(JOBS_FILE.read_text(encoding="utf-8"))
+            data["vagas_ativas"] = len(jobs)
+        except Exception as exc:
+            print("Erro ao ler jobs.json para métricas:", exc)
+    return data
+

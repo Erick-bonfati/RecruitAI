@@ -1,3 +1,19 @@
 [
-
+  {
+    "title": "Teste",
+    "description": "teste",
+    "location": "re",
+    "level": "pleno",
+    "area": "tech",
+    "must": [
+      "Vue.js",
+      "APIs REST"
+    ],
+    "nice": [
+      "TypeScript"
+    ],
+    "tasks": [],
+    "yearsExp": null,
+    "seniority": "pleno"
+  }
 ]
