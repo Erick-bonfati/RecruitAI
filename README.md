@@ -1,9 +1,9 @@
-# RecruitAI -- (README melhorado com inteligencia artificial para melhor entendimento)
+# RecruitAI -- (readme melhorado com inteligencia artificial para melhor entendimento)
 
 Plataforma inteligente para triagem de currículos e correspondência de candidatos usando IA local.
 
 ## Visão Geral
-O SkillMatch AI automatiza a pré-seleção: empresas cadastram vagas com requisitos técnicos; candidatos enviam dados e currículo por formulário lido por IA. Modelos de IA locais extraem competências, analisam experiência e calculam compatibilidade de forma explicável, priorizando privacidade e escalabilidade.
+O SkillMatch AI automatiza a pré-seleção: empresas cadastram vagas com requisitos técnicos; candidatos enviam dados e currículo por formulário lido por IA. Modelos de IA locais extraem competências, analisam experiência e calculam compatibilidade com vaga.
 
 ## Fluxo do Sistema
 1. **Cadastro da vaga (empresa)**  
@@ -19,9 +19,6 @@ O SkillMatch AI automatiza a pré-seleção: empresas cadastram vagas com requis
 
 ## Tecnologias
 
-- **Frontend:** Vue.js; Tailwind CSS; interface de candidatura customizada.
+- **Frontend:** Vue.js;
 - **Backend:** FastAPI (Python); API RESTful; validação com Pydantic.
-- **Processamento assíncrono:** Celery + Redis (broker/cache).
-- **Banco de dados:** PostgreSQL (vagas, candidatos, candidaturas, avaliações).
-- **Inteligência Artificial:** Ollama (LLMs locais); Sentence Transformers (embeddings); NLP para extração de competências.
-- **Infraestrutura:** Docker e Docker Compose; arquitetura containerizada.
+- **Inteligência Artificial:** Ollama (LLMs local llama3); 
