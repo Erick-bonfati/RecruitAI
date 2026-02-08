@@ -24,7 +24,7 @@ body {
   min-height: 100vh;
   font-family: 'Space Grotesk', system-ui, sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top right, #fce8d6 0%, var(--bg) 45%, #e7f0ee 100%);
+  background: gainsboro;
 }
 
 a {

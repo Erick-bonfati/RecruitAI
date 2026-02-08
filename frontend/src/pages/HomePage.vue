@@ -32,24 +32,9 @@
         <p class="eyebrow">Status hoje</p>
         <div class="stat-grid">
           <div class="stat">
-            <strong>{{ metricas.vagas_ativas }}</strong>
+            <strong>{{ vagasAtivas }}</strong>
             <span>vagas ativas</span>
           </div>
-          <div class="stat">
-            <strong>{{ metricas.candidaturas }}</strong>
-            <span>candidaturas</span>
-          </div>
-          <div class="stat">
-            <strong>{{ matchPercent }}%</strong>
-            <span>match médio</span>
-          </div>
-        </div>
-        <div class="progress">
-          <span>Triagens concluídas</span>
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: matchPercent + '%' }"></div>
-          </div>
-          <small>+12% nesta semana</small>
         </div>
       </div>
 
@@ -91,25 +76,20 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 
-const metricas = ref({vagas_ativas: 0, candidaturas: 0, match_medio: 0})
-const metricasLoading = ref(true)
-const metricasErro = ref("")
+const vagasAtivas = ref(0)
 
-const carregarMetricas = async () => {
-  metricasLoading.value = true
-  metricasErro.value = ""
+const carregarVagasAtivas = async () => {
   try {
-    const res = await fetch("http://127.0.0.1:8000/metricas")
-    if(!res.ok) throw new Error("Erro ao carregar métricas")
-    metricas.value = await res.json()
+    const res = await fetch("http://127.0.0.1:8000/vagas-ativas")
+    if (!res.ok) throw new Error("Erro ao carregar vagas ativas")
+    const data = await res.json()
+    vagasAtivas.value = data.count ?? 0
   } catch (err) {
-    metricasErro.value = err.message
-  } finally {
-    metricasLoading.value = false
+    vagasAtivas.value = 0
   }
 }
 
-onMounted(carregarMetricas)
+onMounted(carregarVagasAtivas)
 
 
 const persona = ref('empresa')
@@ -123,7 +103,7 @@ const benefits = computed(() => {
   if (persona.value === 'candidato') {
     return [
       'Feedback claro sobre competências faltantes.',
-      'Chat guiado para explicar experiências.',
+      'Formulário lido por IA para explicar experiências.',
       'Privacidade e transparência no uso dos dados.',
     ]
   }

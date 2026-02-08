@@ -6,7 +6,7 @@
         <h1>Cadastre vagas com requisitos e descrição completa.</h1>
         <p>
           Esta área é para empresas. Defina requisitos, descreva a vaga e indique
-          a faixa salarial ou pretensão.
+          a faixa salarial.
         </p>
       </div>
     </div>
@@ -22,7 +22,7 @@
           <ul>
             <li>Inclua requisitos obrigatórios e desejáveis.</li>
             <li>Descreva responsabilidades e contexto.</li>
-            <li>Defina faixa salarial ou pretensão.</li>
+            <li>Defina faixa salarial.</li>
           </ul>
         </div>
       </div>
@@ -74,7 +74,7 @@
           </div>
         </div>
         <label>
-          Faixa salarial ou pretensão
+          Faixa salarial
           <input v-model="salary" placeholder="Ex: R$ 10.000 - 14.000" />
         </label>
         <div class="form-actions">
@@ -87,10 +87,30 @@
     </div>
   </section>
 
+  <section class="card section">
+  <h2>Vagas cadastradas</h2>
+  <p v-if="jobsError" class="error">{{ jobsError }}</p>
+
+  <div class="candidate-grid">
+    <article v-for="job in jobs" :key="job.id" class="candidate-card">
+      <header>
+        <div>
+          <strong>{{ job.title }}</strong>
+          <span> - {{ job.location }}</span>
+        </div>
+        <button class="btn btn--ghost" type="button" @click="excluirJob(job.id)">
+          Excluir
+        </button>
+      </header>
+      <p>{{ job.description }}</p>
+    </article>
+  </div>
+</section>
+
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const title = ref('')
 const description = ref('')
@@ -104,11 +124,42 @@ const level = ref('')
 const info = ref('')
 const error = ref('')
 
+// Variaveis dos Jobs
+const jobs = ref([])
+const jobsErrors = ref('')
+
+const carregarJobs = async () => {
+  jobsErrors.value = ""
+  try {
+    const res = await fetch("http://127.0.0.1:8000/jobs")
+    if(!res.ok) throw new Error("Erro ao carregar vagas")
+    jobs.value = await res.json()
+  } catch (err) {
+    jobsErrors.value = err.message || "Falha ao carregar vagas"
+  }
+}
+
+onMounted(carregarJobs)
+
+const excluirJob = async (jobId) => {
+  if (!confirm('Deseja excluir esta vaga?')) return
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/jobs/${jobId}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Erro ao excluir vaga')
+    jobs.value = jobs.value.filter((j) => j.id !== jobId)
+  } catch (err) {
+    jobsErrors.value = err.message || 'Falha ao excluir'
+  }
+}
+
 const saveJob = async () => {
   info.value = ''
   error.value = ''
 
   const job = {
+    id: crypto.randomUUID(),
     title: title.value.trim(),
     description: description.value.trim(),
     location: location.value.trim() || 'Não especificado',
@@ -116,6 +167,7 @@ const saveJob = async () => {
     area: 'tech',
     must: [...mustList.value],
     nice: [...niceList.value],
+    salary: salary.value.trim() || 'Não especificado',
     tasks: [],
     yearsExp: null,
     seniority: level.value.trim() || 'Não especificado',
@@ -134,6 +186,8 @@ const saveJob = async () => {
     })
     if (!res.ok) throw new Error('Erro ao salvar vaga')
     info.value = 'Vaga salva em jobs.json.'
+
+    await carregarJobs()
 
     title.value = ''
     description.value = ''

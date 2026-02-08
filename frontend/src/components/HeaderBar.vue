@@ -4,7 +4,7 @@
       <div class="logo-mark">RA</div>
       <div>
         <strong>RecruitAI</strong>
-        <span>triagem local e explicável</span>
+        <span>triagem local</span>
       </div>
     </div>
 

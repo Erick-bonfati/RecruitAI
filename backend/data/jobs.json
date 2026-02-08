@@ -1,19 +1,47 @@
 [
   {
-    "title": "Teste",
-    "description": "teste",
-    "location": "re",
-    "level": "pleno",
+    "title": "Desenvolvedor FullStack",
+    "id": "ca080039-21b1-44a3-90ba-1d07a367bd8f",
+    "description": "Corrigir tarefas do dia a dia",
+    "location": "Remoto",
+    "level": "Pleno",
     "area": "tech",
     "must": [
-      "Vue.js",
-      "APIs REST"
+      "Java",
+      "PHP",
+      "Javascript",
+      "React",
+      "AWS"
     ],
     "nice": [
-      "TypeScript"
+      "Inglês",
+      "Docker"
     ],
+    "salary": "4000",
     "tasks": [],
     "yearsExp": null,
-    "seniority": "pleno"
+    "seniority": "Pleno"
+  },
+  {
+    "title": "Desenvolvedor Backend",
+    "id": "01b9216e-d923-427c-b2cd-dbe921c3aec7",
+    "description": "Corrigir bugs",
+    "location": "Remoto",
+    "level": "Pleno",
+    "area": "tech",
+    "must": [
+      "PHP",
+      "Laravel",
+      "Javascript",
+      "React"
+    ],
+    "nice": [
+      "Inglês",
+      "Docker"
+    ],
+    "salary": "3000",
+    "tasks": [],
+    "yearsExp": null,
+    "seniority": "Pleno"
   }
 ]

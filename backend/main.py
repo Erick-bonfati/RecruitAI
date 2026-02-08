@@ -8,6 +8,7 @@ from pypdf import PdfReader
 from io import BytesIO
 from pathlib import Path
 from threading import Lock
+import uuid
 
 app = FastAPI()
 
@@ -21,7 +22,6 @@ app.add_middleware(
 )
 
 # Persistência simples em arquivo JSON
-METRICAS_PATH = Path(__file__).parent / "data" / "metricas.json"
 DATA_DIR = Path(__file__).parent / "data"
 DATA_DIR.mkdir(exist_ok=True)
 JOBS_FILE = DATA_DIR / "jobs.json"
@@ -54,12 +54,14 @@ class Curriculo(BaseModel):
 # Modelo de vaga
 class Job(BaseModel):
     title: str
+    id: str
     description: str
     location: Optional[str] = "Remoto · Brasil"
     level: Optional[str] = "Pleno"
     area: Optional[str] = "tech"
     must: List[str] = []
     nice: List[str] = []
+    salary: Optional[str] = ""
     tasks: List[str] = []
     yearsExp: Optional[int] = None
     seniority: Optional[str] = ""
@@ -70,7 +72,12 @@ def load_jobs() -> List[Job]:
         return []
     try:
         data = json.loads(JOBS_FILE.read_text(encoding="utf-8"))
-        return [Job(**item) for item in data]
+        jobs = []
+        for item in data:
+            if "id" not in item:
+                item["id"] = str(uuid.uuid4())
+            jobs.append(Job(**item))
+        return jobs
     except Exception as exc:
         print("Erro ao ler jobs.json:", exc)
         return []
@@ -158,6 +165,16 @@ async def extrair_curriculo(file: UploadFile = File(...)):
     print("Enviando para Llama3...")
     llm_json = await chamar_llama3(texto)
 
+    def normalizar_campo(valor):
+        if isinstance(valor, list):
+            return ", ".join([str(v) for v in valor if v])
+        return valor or ""
+
+    llm_json["email"] = normalizar_campo(llm_json.get("email"))
+    llm_json["telefone"] = normalizar_campo(llm_json.get("telefone"))
+    llm_json["linkedin"] = normalizar_campo(llm_json.get("linkedin"))
+    llm_json["nome"] = normalizar_campo(llm_json.get("nome"))
+
     # Validar JSON com Pydantic
     try:
         parsed = Curriculo(**llm_json)
@@ -173,22 +190,30 @@ async def listar_jobs():
 
 @app.post("/jobs", response_model=Job)
 async def criar_job(job: Job):
+    if not job.id:
+        job.id = str(uuid.uuid4())
     jobs = load_jobs()
     jobs.append(job)
     save_jobs(jobs)
     return job
 
-@app.get("/metricas")
-def obter_metricas():
-    if not METRICAS_PATH.exists():
-        raise HTTPException(status_code=500, detail="Métricas não encontradas.")
-    data = json.loads(METRICAS_PATH.read_text(encoding="utf-8"))
-    
-    if JOBS_FILE.exists():
-        try: 
-            jobs = json.loads(JOBS_FILE.read_text(encoding="utf-8"))
-            data["vagas_ativas"] = len(jobs)
-        except Exception as exc:
-            print("Erro ao ler jobs.json para métricas:", exc)
-    return data
+@app.delete("/jobs/{job_id}")
+async def deletar_job(job_id: str):
+    jobs = load_jobs()
+    jobs_filtradas = [job for job in jobs if job.id != job_id]
+    if len(jobs_filtradas) == len(jobs):
+        raise HTTPException(status_code=404, detail="Vaga não encontrada.")
+    save_jobs(jobs_filtradas)
+    return {"ok": True}
+
+@app.get("/vagas-ativas")
+def obter_vagas_ativas():
+    if not JOBS_FILE.exists():
+        return {"count": 0}
+    try:
+        jobs = json.loads(JOBS_FILE.read_text(encoding="utf-8"))
+        return {"count": len(jobs)}
+    except Exception as exc:
+        print("Erro ao ler jobs.json para métricas:", exc)
+        raise HTTPException(status_code=500, detail="Erro ao calcular vagas ativas.")
 
